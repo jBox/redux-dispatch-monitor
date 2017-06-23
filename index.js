@@ -1,42 +1,56 @@
+if (typeof console === "undefined") {
+    console = {};
+}
+if (typeof console.error !== "function") {
+    console.error = (error) => (error);
+}
+
 const isPromise = (p) => (p && typeof p.then === "function");
+
+const tryCall = (fn, ...args) => {
+    if (typeof fn === "function") {
+        try {
+            return fn(...args);
+        } catch (exception) {
+            console.error("[TRY_CALL]", exception);
+        }
+    }
+
+    return null;
+};
 
 export const createMonitor = () => {
     const monitor = (createStore) => (reducer, preloadedState, enhancer) => {
         const store = createStore(reducer, preloadedState, enhancer);
         const dispatch = store.dispatch;
-        const promises = [];
         monitor.dispatch = (...actions) => {
             if (actions.length === 0) {
-                throw new Error("Actions is not allow to empty.");
+                return {
+                    done: (fullFill) => tryCall(fullFill, store.getState())
+                }
             }
 
-            actions.reduce((res, action) => {
-                const result = dispatch(action);
-                if (isPromise(result)) {
-                    res.push(result.catch((error) => {
-                        console.error("[DISPATCH_ACTION]", error);
-                        return Promise.resolve();
-                    }));
-                } else {
-                    res.push(Promise.resolve(result));
+            const promises = actions.reduce((res, action) => {
+                try {
+                    const result = dispatch(action);
+                    if (isPromise(result)) {
+                        res.push(result.catch((error) => {
+                            console.error("[DISPATCH_ACTION]", error);
+                            return Promise.resolve();
+                        }));
+                    } else {
+                        res.push(Promise.resolve(result));
+                    }
+                } catch (exception) {
+                    console.error("[DISPATCH_EXCEPTION]", exception)
                 }
 
                 return res;
-            }, promises);
+            }, []);
 
             return {
                 done: (fullFill) => {
-                    return Promise.all(promises).then(() => {
-                        if (typeof fullFill === "function") {
-                            try {
-                                return fullFill(store.getState());
-                            } catch (ex) {
-                                console.error(ex);
-                            }
-                        }
-
-                        return null;
-                    });
+                    return Promise.all(promises).then(() => tryCall(fullFill, store.getState()));
                 }
             };
         };

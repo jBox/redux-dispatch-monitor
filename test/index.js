@@ -7,6 +7,7 @@ const { createSeviceMiddleware, rootReducers } = require("./common");
 const serviceAction = { SERVICE: { type: "c", payload: "cc" } };
 const serviceErrorAction = { error: "TEST ERROR", SERVICE: { type: "c", payload: "cc" } };
 const objectAction = { type: "a", payload: "a" };
+const serviceAction2 = { SERVICE: { type: "c", payload: "ccx" } };
 const thunkAction = (dispatch, getState) => {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
@@ -18,7 +19,7 @@ const thunkAction = (dispatch, getState) => {
 // usage
 describe("redux-dispatch-monitor", function () {
 
-    const g = { };
+    const g = {};
     beforeEach(function () {
         const middlewares = [thunk.withExtraArgument(), createSeviceMiddleware()];
         const monitor = createMonitor();
@@ -35,6 +36,23 @@ describe("redux-dispatch-monitor", function () {
                 const a = JSON.stringify({ a: 'a', b: 'b', c: 'cc' });
                 assert.equal(a, e);
                 done();
+            });
+        });
+    });
+
+    describe("With customized middleware", function () {
+        it("multiple dispatch supported", function (done) {
+            g.monitor.dispatch(
+                serviceAction, objectAction, thunkAction
+            ).done((state) => {
+                g.monitor.dispatch(
+                    serviceAction2
+                ).done((state) => {
+                    const e = JSON.stringify(state);
+                    const a = JSON.stringify({ a: 'a', b: 'b', c: 'ccx' });
+                    assert.equal(a, e);
+                    done();
+                });
             });
         });
     });
@@ -59,10 +77,10 @@ describe("redux-dispatch-monitor", function () {
         });
     });
     describe("no actions", function () {
-        it("state 'a' should be changed", function (done) {
-            g.monitor.dispatch(objectAction).done((state) => {
+        it("initailize & sync", function (done) {
+            g.monitor.dispatch().done((state) => {
                 const e = JSON.stringify(state);
-                const a = JSON.stringify({ a: 'a', b: '', c: '' });
+                const a = JSON.stringify({ a: '', b: '', c: '' });
                 assert.equal(a, e);
                 done();
             });
