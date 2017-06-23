@@ -17,17 +17,24 @@ const thunkAction = (dispatch, getState) => {
 }
 
 // usage
-describe("redux-dispatch-monitor", function () {
+describe("redux-dispatch-monitor", () => {
 
     const g = {};
-    beforeEach(function () {
+    beforeEach(() => {
         const middlewares = [thunk.withExtraArgument(), createSeviceMiddleware()];
         const monitor = createMonitor();
         createStore(rootReducers, compose(monitor, applyMiddleware(...middlewares)));
         g.monitor = monitor;
     });
 
-    describe("With customized middleware", function () {
+    describe("Not init", () => {
+        it("throw", function () {
+            const monitor = createMonitor();
+            assert.throws(monitor.dispatch, Error);
+        });
+    });
+
+    describe("With customized middleware", () => {
         it("state should be updated", function (done) {
             g.monitor.dispatch(
                 serviceAction, objectAction, thunkAction
@@ -40,7 +47,7 @@ describe("redux-dispatch-monitor", function () {
         });
     });
 
-    describe("With customized middleware", function () {
+    describe("With customized middleware", () => {
         it("multiple dispatch supported", function (done) {
             g.monitor.dispatch(
                 serviceAction, objectAction, thunkAction
@@ -56,7 +63,7 @@ describe("redux-dispatch-monitor", function () {
             });
         });
     });
-    describe("Without customized middleware", function () {
+    describe("Without customized middleware", () => {
         it("the state 'c' should be empty", function (done) {
             g.monitor.dispatch(
                 serviceErrorAction, objectAction, thunkAction
@@ -66,7 +73,7 @@ describe("redux-dispatch-monitor", function () {
             });
         });
     });
-    describe("Without customized middleware", function () {
+    describe("Without customized middleware", () => {
         it("the state 'c' should be empty", function (done) {
             g.monitor.dispatch(
                 objectAction, thunkAction
@@ -76,7 +83,7 @@ describe("redux-dispatch-monitor", function () {
             });
         });
     });
-    describe("no actions", function () {
+    describe("no actions", () => {
         it("initailize & sync", function (done) {
             g.monitor.dispatch().done((state) => {
                 const e = JSON.stringify(state);

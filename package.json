@@ -1,6 +1,6 @@
 {
   "name": "redux-dispatch-monitor",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Initialize redux state asynchronously with multiple async actions.",
   "main": "lib/index.js",
   "directories": {

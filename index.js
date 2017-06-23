@@ -19,14 +19,16 @@ const tryCall = (fn, ...args) => {
     return null;
 };
 
+const INIT_ERROR = () => { throw new Error("Compose monitor into Redux store first. e.g. createStore(reducers, compose(monitor, applyMiddleware(...middlewares)))"); }
+
 export const createMonitor = () => {
     const monitor = (createStore) => (reducer, preloadedState, enhancer) => {
         const store = createStore(reducer, preloadedState, enhancer);
-        const dispatch = store.dispatch;
+        const { dispatch, getState } = store;
         monitor.dispatch = (...actions) => {
             if (actions.length === 0) {
                 return {
-                    done: (fullFill) => tryCall(fullFill, store.getState())
+                    done: (fullFill) => tryCall(fullFill, getState())
                 }
             }
 
@@ -50,7 +52,7 @@ export const createMonitor = () => {
 
             return {
                 done: (fullFill) => {
-                    return Promise.all(promises).then(() => tryCall(fullFill, store.getState()));
+                    return Promise.all(promises).then(() => tryCall(fullFill, getState()));
                 }
             };
         };
@@ -58,6 +60,7 @@ export const createMonitor = () => {
         return store;
     };
 
+    monitor.dispatch = INIT_ERROR;
     return monitor;
 };
 
