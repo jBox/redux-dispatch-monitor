@@ -19,7 +19,10 @@ const tryCall = (fn, ...args) => {
     return null;
 };
 
-const INIT_ERROR = () => { throw new Error("Compose monitor into Redux store first. e.g. createStore(reducers, compose(monitor, applyMiddleware(...middlewares)))"); }
+const INIT_ERROR = () => { throw new Error(`Compose monitor into Redux store first. e.g. 
+const monitor = createMonitor();
+const store = createStore(reducers, compose(monitor, applyMiddleware(...middlewares)));
+monitor.dispatch(...actions).done(fullFill);`); }
 
 export const createMonitor = () => {
     const monitor = (createStore) => (reducer, preloadedState, enhancer) => {
