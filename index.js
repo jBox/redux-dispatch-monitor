@@ -19,23 +19,28 @@ const tryCall = (fn, ...args) => {
     return null;
 };
 
-const INIT_ERROR = () => { throw new Error(`Compose monitor into Redux store first. e.g. 
+const INIT_ERROR = () => {
+    throw new Error(`Compose monitor into Redux store first. e.g. 
 const monitor = createMonitor();
 const store = createStore(reducers, compose(monitor, applyMiddleware(...middlewares)));
-monitor.dispatch(...actions).done(fullFill);`); }
+monitor.dispatch(...actions).done(fullFill);`);
+}
+
+const monitorPromise = (getState, tasks = []) => {
+    const p = tasks.length === 0 ?
+        Promise.resolve() :
+        Promise.all(tasks).then(() => Promise.resolve());
+
+    p.done = (fullFill) => p.then(() => tryCall(fullFill, getState()));
+    return p;
+};
 
 export const createMonitor = () => {
     const monitor = (createStore) => (reducer, preloadedState, enhancer) => {
         const store = createStore(reducer, preloadedState, enhancer);
         const { dispatch, getState } = store;
         monitor.dispatch = (...actions) => {
-            if (actions.length === 0) {
-                return {
-                    done: (fullFill) => tryCall(fullFill, getState())
-                }
-            }
-
-            const promises = actions.reduce((res, action) => {
+            const tasks = actions.reduce((res, action) => {
                 try {
                     const result = dispatch(action);
                     if (isPromise(result)) {
@@ -53,11 +58,7 @@ export const createMonitor = () => {
                 return res;
             }, []);
 
-            return {
-                done: (fullFill) => {
-                    return Promise.all(promises).then(() => tryCall(fullFill, getState()));
-                }
-            };
+            return monitorPromise(getState, tasks);
         };
 
         return store;

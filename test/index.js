@@ -42,8 +42,7 @@ describe("redux-dispatch-monitor", () => {
                 const e = JSON.stringify(state);
                 const a = JSON.stringify({ a: 'a', b: 'b', c: 'cc' });
                 assert.equal(a, e);
-                done();
-            });
+            }).then(() => done());
         });
     });
 
@@ -58,8 +57,7 @@ describe("redux-dispatch-monitor", () => {
                     const e = JSON.stringify(state);
                     const a = JSON.stringify({ a: 'a', b: 'b', c: 'ccx' });
                     assert.equal(a, e);
-                    done();
-                });
+                }).then(() => done());
             });
         });
     });
@@ -69,8 +67,7 @@ describe("redux-dispatch-monitor", () => {
                 serviceErrorAction, objectAction, thunkAction
             ).done((state) => {
                 assert.equal("", state.c);
-                done();
-            });
+            }).then(() => done());
         });
     });
     describe("Without customized middleware", () => {
@@ -79,8 +76,7 @@ describe("redux-dispatch-monitor", () => {
                 objectAction, thunkAction
             ).done((state) => {
                 assert.equal("", state.c);
-                done();
-            });
+            }).then(() => done());
         });
     });
     describe("no actions", () => {
@@ -89,8 +85,7 @@ describe("redux-dispatch-monitor", () => {
                 const e = JSON.stringify(state);
                 const a = JSON.stringify({ a: '', b: '', c: '' });
                 assert.equal(a, e);
-                done();
-            });
+            }).then(() => done());
         });
     });
 });
